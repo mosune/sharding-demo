@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.shardingspringboot.repo.OrderRepo">
+
+    <resultMap id="baseResultMap" type="com.example.shardingspringboot.entity.Order">
+        <result column="id" property="id" jdbcType="BIGINT" />
+        <result column="order_id" property="orderId" jdbcType="INTEGER" />
+        <result column="user_id" property="userId" jdbcType="INTEGER" />
+        <result column="status" property="status" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <insert id="saveList">
+        insert into t_order (order_id, user_id, status) values
+        <foreach collection="list" separator="," item="item">
+            (#{item.orderId}, #{item.userId}, #{item.status})
+        </foreach>
+    </insert>
+
+    <select id="getList" resultMap="baseResultMap">
+        SELECT * FROM t_order
+        <where>
+            <if test="orderId != null">
+                and order_id = #{orderId}
+            </if>
+        </where>
+        <if test="start != null">
+            limit #{start}, #{length}
+        </if>
+    </select>
+
+    <select id="getJoinList" resultType="com.example.shardingspringboot.vo.OrderItemVo">
+        select
+            o.id as id,
+            item.order_item_id as itemId,
+            o.status as orderStatus,
+            item.status as itemStatus
+        from
+            t_order o join t_order_item item on o.id = item.order_id
+    </select>
+
+</mapper>
